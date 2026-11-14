@@ -271,18 +271,22 @@ def batchnorm_backward(dout, cache):
     # Referencing the original paper (https://arxiv.org/abs/1502.03167)       #
     # might prove to be helpful.                                              #
     ###########################################################################
-
-    ###########################################################################
-    #                             END OF YOUR CODE                            #
-    ###########################################################################
     dbeta = dout.sum(axis=0)
     dgamma = (dout * x_hat).sum(axis=0)
     dx_hat = dout * gamma
     dmean = np.sum(- dx_hat * (var + eps)**(-0.5), axis=0)
     dvar =  np.sum(dx_hat * (-0.5) *(x_hat / (var + eps)), axis=0)
     dx = dx_hat * (var + eps)**(-0.5)
-    dx += np.tile(dmean, (N, 1)) / N
+    dx += dmean / N
     dx += dvar * (2 * (x - mean)) / N
+
+    # Alternative version can be derived from above or on paper
+    # dx = (var + eps)**(-0.5) * (dx_hat - np.sum(dx_hat, axis=0)/N) + np.sum(dx_hat * (-0.5) *(x_hat / (var + eps)), axis=0)* (2 * (x - mean)) / N
+
+    ###########################################################################
+    #                             END OF YOUR CODE                            #
+    ###########################################################################
+
 
     return dx, dgamma, dbeta
 
@@ -301,6 +305,8 @@ def batchnorm_backward_alt(dout, cache):
     Inputs / outputs: Same as batchnorm_backward
     """
     dx, dgamma, dbeta = None, None, None
+    x, x_hat, gamma, beta, mean, var, eps = cache
+    N, D = x.shape
     ###########################################################################
     # TODO: Implement the backward pass for batch normalization. Store the    #
     # results in the dx, dgamma, and dbeta variables.                         #
@@ -309,7 +315,10 @@ def batchnorm_backward_alt(dout, cache):
     # should be able to compute gradients with respect to the inputs in a     #
     # single statement; our implementation fits on a single 80-character line.#
     ###########################################################################
-
+    dbeta = dout.sum(axis=0)
+    dgamma = (dout * x_hat).sum(axis=0)
+    dx_hat = dout * gamma
+    dx = (dx_hat - (np.sum(dx_hat, axis=0) + x_hat * np.sum(dx_hat * x_hat, axis=0)) / N) * (var + eps)**(-0.5)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
