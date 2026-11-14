@@ -85,7 +85,7 @@ class FullyConnectedNet(object):
             else:
                self.params[f'b{layer_num+1}'] = np.zeros(hidden_dims[layer_num])
 
-            if self.normalization and layer_num != self.num_layers-1:
+            if self.normalization == 'batchnorm' and layer_num != self.num_layers-1:
                 self.params[f'gamma{layer_num+1}'] = np.ones(hidden_dims[layer_num])
                 self.params[f'beta{layer_num+1}'] = np.zeros(hidden_dims[layer_num])
         ############################################################################

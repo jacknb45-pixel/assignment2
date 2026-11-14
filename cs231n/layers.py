@@ -305,8 +305,6 @@ def batchnorm_backward_alt(dout, cache):
     Inputs / outputs: Same as batchnorm_backward
     """
     dx, dgamma, dbeta = None, None, None
-    x, x_hat, gamma, beta, mean, var, eps = cache
-    N, D = x.shape
     ###########################################################################
     # TODO: Implement the backward pass for batch normalization. Store the    #
     # results in the dx, dgamma, and dbeta variables.                         #
@@ -315,6 +313,9 @@ def batchnorm_backward_alt(dout, cache):
     # should be able to compute gradients with respect to the inputs in a     #
     # single statement; our implementation fits on a single 80-character line.#
     ###########################################################################
+    x, x_hat, gamma, beta, mean, var, eps = cache
+    N, D = x.shape
+
     dbeta = dout.sum(axis=0)
     dgamma = (dout * x_hat).sum(axis=0)
     dx_hat = dout * gamma
@@ -359,7 +360,13 @@ def layernorm_forward(x, gamma, beta, ln_param):
     # transformations you could perform, that would enable you to copy over   #
     # the batch norm code and leave it almost unchanged?                      #
     ###########################################################################
+    mean = np.mean(x, axis=1, keepdims=True)
+    var = np.var(x, axis=1, keepdims=True)
 
+    x_hat = (x - mean) / (var + eps)**0.5
+    out = gamma * x_hat + beta
+
+    cache = (x, x_hat, gamma, var, eps)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
@@ -389,7 +396,14 @@ def layernorm_backward(dout, cache):
     # implementation of batch normalization. The hints to the forward pass    #
     # still apply!                                                            #
     ###########################################################################
+    x, x_hat, gamma, var, eps = cache
+    N, D = x.shape
 
+    dbeta = dout.sum(axis=0)
+    dgamma = (dout * x_hat).sum(axis=0)
+    dx_hat = dout * gamma
+
+    dx = (dx_hat - (np.sum(dx_hat, axis=1, keepdims=True) + x_hat * np.sum(dx_hat * x_hat, axis=1, keepdims=True)) / D) * (var + eps)**(-0.5)
     ###########################################################################
     #                             END OF YOUR CODE                            #
     ###########################################################################
