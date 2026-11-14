@@ -85,7 +85,7 @@ class FullyConnectedNet(object):
             else:
                self.params[f'b{layer_num+1}'] = np.zeros(hidden_dims[layer_num])
 
-            if self.normalization == 'batchnorm' and layer_num != self.num_layers-1:
+            if self.normalization and layer_num != self.num_layers-1:
                 self.params[f'gamma{layer_num+1}'] = np.ones(hidden_dims[layer_num])
                 self.params[f'beta{layer_num+1}'] = np.zeros(hidden_dims[layer_num])
         ############################################################################
@@ -167,8 +167,10 @@ class FullyConnectedNet(object):
                 scores, cache_scores = affine_forward(hidden_out, self.params[f'W{layer_num+1}'], self.params[f'b{layer_num+1}'])
             else:    
                 hidden_out, cache_hiddens[layer_num]= affine_forward(hidden_out, self.params[f'W{layer_num+1}'], self.params[f'b{layer_num+1}'])
-                if self.normalization:
+                if self.normalization == 'batchnorm':
                     hidden_out, cache_norms[layer_num] = batchnorm_forward(hidden_out, self.params[f'gamma{layer_num+1}'], self.params[f'beta{layer_num+1}'], self.bn_params[layer_num])
+                if self.normalization == 'layernorm':
+                    hidden_out, cache_norms[layer_num] = layernorm_forward(hidden_out, self.params[f'gamma{layer_num+1}'], self.params[f'beta{layer_num+1}'], self.bn_params[layer_num])
                 hidden_out, cache_relus[layer_num] = relu_forward(hidden_out)
         ############################################################################
         #                             END OF YOUR CODE                             #
@@ -199,8 +201,10 @@ class FullyConnectedNet(object):
                 dhidden_out, grads[f'W{layer_num+1}'], grads[f'b{layer_num+1}'] = affine_backward(ds, cache_scores)
             else:
                 dhidden_out = relu_backward(dhidden_out, cache_relus[layer_num])
-                if self.normalization:
+                if self.normalization == 'batchnorm':
                     dhidden_out, grads[f'gamma{layer_num+1}'], grads[f'beta{layer_num+1}'] = batchnorm_backward(dhidden_out, cache_norms[layer_num])
+                if self.normalization == 'layernorm':
+                    dhidden_out, grads[f'gamma{layer_num+1}'], grads[f'beta{layer_num+1}'] = layernorm_backward(dhidden_out, cache_norms[layer_num])
                 dhidden_out, grads[f'W{layer_num+1}'], grads[f'b{layer_num+1}'] = affine_backward(dhidden_out, cache_hiddens[layer_num])
 
         for layer_num in range(self.num_layers):
