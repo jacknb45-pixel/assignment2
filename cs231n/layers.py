@@ -531,7 +531,7 @@ def conv_forward_naive(x, w, b, conv_param):
     Hp, Wp = 1 + (H + 2 * pad - HH)//stride, 1 + (H + 2 * pad - WW)//stride
 
     out_shape = (N, F, Hp, Wp)
-    out = np.zeros(out_shape, dtype=np.float32)
+    out = np.zeros(out_shape)
 
     for n in range(N):
         for f in range(F):
@@ -563,6 +563,44 @@ def conv_backward_naive(dout, cache):
     ###########################################################################
     # TODO: Implement the convolutional backward pass.                        #
     ###########################################################################
+    x, w, b, conv_param = cache
+    stride = conv_param['stride']
+    pad = conv_param['pad'] 
+    x_pad = np.pad(x, pad_width=((0, 0), (0, 0), (pad, pad), (pad, pad)), mode='constant')
+
+    N, C, H, W = x.shape
+    F, C, HH, WW = w.shape
+    N, F, Hp, Wp = dout.shape
+
+    db = np.zeros(b.shape)
+    dw = np.zeros(w.shape)
+    dx_pad = np.zeros(x_pad.shape)
+
+    # compute db
+    for f in range(F):
+        for n in range(N):
+            db[f] += np.sum(dout[n, f])
+
+
+    # compute dw        
+    for f in range(F):
+        for n in range(N):
+            for hp in range(Hp):
+                for wp in range(Wp):
+                    dw[f] += dout[n, f, hp, wp] * x_pad[n, :, stride*hp:stride*hp+HH, stride*wp:stride*wp+WW]
+
+    # compute dx_pad
+    for n in range(N):
+        for f in range(F):
+             for hp in range(Hp):
+                for wp in range(Wp):
+                    dx_pad[n, :, stride*hp:stride*hp+HH, stride*wp:stride*wp+WW] += w[f] * dout[n, f, hp, wp]
+
+    # de-pad
+    if pad > 0:
+        dx = dx_pad[:, :, pad:-pad, pad:-pad]
+    else:
+        dx = dx_pad
 
     ###########################################################################
     #                             END OF YOUR CODE                            #
