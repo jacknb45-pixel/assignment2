@@ -2,6 +2,7 @@ asttokens==3.0.2
 comm==0.2.3
 contourpy==1.4.0
 cycler==0.12.1
+Cython==3.3.1
 debugpy==1.8.22
 executing==2.3.0
 fonttools==4.68.0
@@ -31,6 +32,7 @@ Pygments==2.21.0
 pyparsing==3.3.3
 python-dateutil==4.0.0
 pyzmq==27.3.0
+setuptools==84.2.1
 six==1.17.0
 stack-data==0.6.3
 tornado==6.6

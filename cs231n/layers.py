@@ -512,7 +512,7 @@ def conv_forward_naive(x, w, b, conv_param):
 
     Returns a tuple of:
     - out: Output data, of shape (N, F, H', W') where H' and W' are given by
-      H' = 1 + (H + 2 * pad - HH) / stride
+      H' = 1 +  (H + 2 * pad - HH) / stride
       W' = 1 + (W + 2 * pad - WW) / stride
     - cache: (x, w, b, conv_param)
     """
